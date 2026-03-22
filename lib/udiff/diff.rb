@@ -4,22 +4,30 @@ module Udiff
   class Diff
     DEFAULT_CONTEXT = 3
 
+    ANSI_COLORS = {
+      header: "\033[90m",
+      insert: "\033[32m",
+      delete: "\033[31m",
+      hunk_header: "\033[36m",
+      reset: "\033[0m"
+    }.freeze
+
     def initialize(string1, string2, context: DEFAULT_CONTEXT)
       @lines1 = split_lines(string1)
       @lines2 = split_lines(string2)
       @context = context
     end
 
-    def to_s
+    def to_s(format = :text)
       changes = compute_diff(@lines1, @lines2)
       hunks = build_hunks(changes, @context)
       return "" if hunks.empty?
 
       out = +""
-      out << "--- a\n"
-      out << "+++ b\n"
+      out << colorize("--- a", :header, format) << "\n"
+      out << colorize("+++ b", :header, format) << "\n"
       hunks.each do |hunk|
-        out << format_hunk(hunk)
+        out << format_hunk(hunk, format)
       end
       out
     end
@@ -182,7 +190,16 @@ module Udiff
       { old_start: old_start, new_start: new_start, changes: [], last_change_idx: nil }
     end
 
-    def format_hunk(hunk)
+    def colorize(text, type, format)
+      return text unless format == :color
+
+      code = ANSI_COLORS[type]
+      return text unless code
+
+      "#{code}#{text}#{ANSI_COLORS[:reset]}"
+    end
+
+    def format_hunk(hunk, format)
       old_start = hunk[:old_start] + 1
       new_start = hunk[:new_start] + 1
       old_count = 0
@@ -197,16 +214,16 @@ module Udiff
           old_count += 1
           new_count += 1
         when :delete
-          lines << "-#{normalized}"
+          lines << colorize("-#{normalized.chomp}", :delete, format) << "\n"
           old_count += 1
         when :insert
-          lines << "+#{normalized}"
+          lines << colorize("+#{normalized.chomp}", :insert, format) << "\n"
           new_count += 1
         end
       end
 
-      header = "@@ -#{old_start},#{old_count} +#{new_start},#{new_count} @@\n"
-      header + lines.join
+      header = colorize("@@ -#{old_start},#{old_count} +#{new_start},#{new_count} @@", :hunk_header, format)
+      "#{header}\n#{lines.join}"
     end
 
     def ensure_newline(line)
