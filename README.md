@@ -60,9 +60,10 @@ Produces ANSI-colored output:
 puts Udiff::Diff.new(a, b, context: 1).to_s
 ```
 
-### Without diff info headers
+### With diff info headers
+
+By default, file headers (`--- a` / `+++ b`) and hunk headers (`@@ ... @@`) are not included. To include them:
 
 ```ruby
-# Suppress --- a / +++ b and @@ ... @@ lines
-puts Udiff::Diff.new(a, b, include_diff_info: false).to_s
+puts Udiff::Diff.new(a, b, include_diff_info: true).to_s
 ```

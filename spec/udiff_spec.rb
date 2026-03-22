@@ -7,7 +7,7 @@ RSpec.describe Udiff::Diff do
   end
 
   it "shows a simple one-line change" do
-    diff = Udiff::Diff.new("foo\n", "bar\n")
+    diff = Udiff::Diff.new("foo\n", "bar\n", include_diff_info: true)
     expected = <<~DIFF
       --- a
       +++ b
@@ -19,7 +19,7 @@ RSpec.describe Udiff::Diff do
   end
 
   it "shows added lines" do
-    diff = Udiff::Diff.new("foo\n", "foo\nbar\n")
+    diff = Udiff::Diff.new("foo\n", "foo\nbar\n", include_diff_info: true)
     expected = <<~DIFF
       --- a
       +++ b
@@ -31,7 +31,7 @@ RSpec.describe Udiff::Diff do
   end
 
   it "shows removed lines" do
-    diff = Udiff::Diff.new("foo\nbar\n", "foo\n")
+    diff = Udiff::Diff.new("foo\nbar\n", "foo\n", include_diff_info: true)
     expected = <<~DIFF
       --- a
       +++ b
@@ -45,7 +45,7 @@ RSpec.describe Udiff::Diff do
   it "shows context lines around changes" do
     a = "1\n2\n3\n4\n5\n6\n7\n8\n9\n"
     b = "1\n2\n3\n4\nX\n6\n7\n8\n9\n"
-    diff = Udiff::Diff.new(a, b)
+    diff = Udiff::Diff.new(a, b, include_diff_info: true)
     expected = <<~DIFF
       --- a
       +++ b
@@ -63,7 +63,7 @@ RSpec.describe Udiff::Diff do
   end
 
   it "handles empty first string" do
-    diff = Udiff::Diff.new("", "foo\n")
+    diff = Udiff::Diff.new("", "foo\n", include_diff_info: true)
     expected = <<~DIFF
       --- a
       +++ b
@@ -74,7 +74,7 @@ RSpec.describe Udiff::Diff do
   end
 
   it "handles empty second string" do
-    diff = Udiff::Diff.new("foo\n", "")
+    diff = Udiff::Diff.new("foo\n", "", include_diff_info: true)
     expected = <<~DIFF
       --- a
       +++ b
@@ -85,7 +85,7 @@ RSpec.describe Udiff::Diff do
   end
 
   it "handles no newline at end of file" do
-    diff = Udiff::Diff.new("foo", "bar")
+    diff = Udiff::Diff.new("foo", "bar", include_diff_info: true)
     expected = <<~'DIFF'
       --- a
       +++ b
@@ -104,7 +104,7 @@ RSpec.describe Udiff::Diff do
     b_lines[2] = "changed3\n"
     b_lines[17] = "changed18\n"
     b = b_lines.join
-    diff = Udiff::Diff.new(a, b)
+    diff = Udiff::Diff.new(a, b, include_diff_info: true)
     result = diff.to_s
     expect(result).to include("--- a")
     expect(result).to include("+++ b")
@@ -116,7 +116,7 @@ RSpec.describe Udiff::Diff do
   it "supports custom context size" do
     a = "1\n2\n3\n4\n5\n6\n7\n8\n9\n"
     b = "1\n2\n3\n4\nX\n6\n7\n8\n9\n"
-    diff = Udiff::Diff.new(a, b, context: 1)
+    diff = Udiff::Diff.new(a, b, context: 1, include_diff_info: true)
     expected = <<~DIFF
       --- a
       +++ b
@@ -130,7 +130,7 @@ RSpec.describe Udiff::Diff do
   end
 
   it "handles completely different strings" do
-    diff = Udiff::Diff.new("a\nb\nc\n", "x\ny\nz\n")
+    diff = Udiff::Diff.new("a\nb\nc\n", "x\ny\nz\n", include_diff_info: true)
     expected = <<~DIFF
       --- a
       +++ b
@@ -153,7 +153,7 @@ RSpec.describe Udiff::Diff do
     let(:gray) { "\033[90m" }
 
     it "colorizes diff output" do
-      diff = Udiff::Diff.new("foo\n", "bar\n")
+      diff = Udiff::Diff.new("foo\n", "bar\n", include_diff_info: true)
       result = diff.to_s(:color)
 
       expect(result).to include("#{gray}--- a#{reset}")
@@ -164,7 +164,7 @@ RSpec.describe Udiff::Diff do
     end
 
     it "does not colorize context lines" do
-      diff = Udiff::Diff.new("a\nb\nc\n", "a\nX\nc\n")
+      diff = Udiff::Diff.new("a\nb\nc\n", "a\nX\nc\n", include_diff_info: true)
       result = diff.to_s(:color)
 
       expect(result).to include(" a\n")
@@ -179,9 +179,9 @@ RSpec.describe Udiff::Diff do
     end
   end
 
-  describe "include_diff_info: false" do
+  describe "include_diff_info: false (default)" do
     it "excludes file headers and hunk headers" do
-      diff = Udiff::Diff.new("foo\n", "bar\n", include_diff_info: false)
+      diff = Udiff::Diff.new("foo\n", "bar\n")
       result = diff.to_s
       expect(result).not_to include("--- a")
       expect(result).not_to include("+++ b")
@@ -190,7 +190,7 @@ RSpec.describe Udiff::Diff do
     end
 
     it "works with color format" do
-      diff = Udiff::Diff.new("foo\n", "bar\n", include_diff_info: false)
+      diff = Udiff::Diff.new("foo\n", "bar\n")
       result = diff.to_s(:color)
       expect(result).not_to include("--- a")
       expect(result).not_to include("+++ b")
@@ -200,7 +200,7 @@ RSpec.describe Udiff::Diff do
     end
 
     it "includes context lines" do
-      diff = Udiff::Diff.new("a\nb\nc\n", "a\nX\nc\n", include_diff_info: false)
+      diff = Udiff::Diff.new("a\nb\nc\n", "a\nX\nc\n")
       result = diff.to_s
       expect(result).to eq(" a\n-b\n+X\n c\n")
     end

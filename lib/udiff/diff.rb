@@ -12,7 +12,7 @@ module Udiff
       reset: "\033[0m"
     }.freeze
 
-    def initialize(string1, string2, context: DEFAULT_CONTEXT, include_diff_info: true)
+    def initialize(string1, string2, context: DEFAULT_CONTEXT, include_diff_info: false)
       @lines1 = split_lines(string1)
       @lines2 = split_lines(string2)
       @context = context
