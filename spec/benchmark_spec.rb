@@ -39,8 +39,8 @@ RSpec.describe "Benchmark: Udiff vs Diffy" do
     udiff_entry = report.entries.find { |e| e.label == "Udiff" }
     diffy_entry = report.entries.find { |e| e.label == "Diffy" }
 
-    puts "  #{label}: Udiff #{format('%.1f', udiff_entry.ips)} ips vs Diffy #{format('%.1f', diffy_entry.ips)} ips " \
-         "(#{format('%.2fx', udiff_entry.ips / diffy_entry.ips)})"
+    puts "  #{label}: Udiff #{format("%.1f", udiff_entry.ips)} ips vs Diffy #{format("%.1f", diffy_entry.ips)} ips " \
+         "(#{format("%.2fx", udiff_entry.ips / diffy_entry.ips)})"
   end
 
   it "small input (10 lines, 10% changed)" do

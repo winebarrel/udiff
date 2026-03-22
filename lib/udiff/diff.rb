@@ -42,11 +42,11 @@ module Udiff
       n = a.size
       m = b.size
       max = n + m
-      return b.map { |line| [:insert, line] } if n == 0
-      return a.map { |line| [:delete, line] } if m == 0
+      return b.map { |line| [:insert, line] } if n.zero?
+      return a.map { |line| [:delete, line] } if m.zero?
 
       # v[k] = x value of the endpoint of the furthest reaching path in diagonal k
-      v = Array.new(2 * max + 1)
+      v = Array.new((2 * max) + 1)
       v[max + 1] = 0 # v[1] = 0, offset by max
 
       trace = []
@@ -57,11 +57,11 @@ module Udiff
 
           (-d..d).step(2) do |k|
             idx = k + max
-            if k == -d || (k != d && v[idx - 1] < v[idx + 1])
-              x = v[idx + 1]
-            else
-              x = v[idx - 1] + 1
-            end
+            x = if k == -d || (k != d && v[idx - 1] < v[idx + 1])
+                  v[idx + 1]
+                else
+                  v[idx - 1] + 1
+                end
 
             y = x - k
             while x < n && y < m && a[x] == b[y]
@@ -71,9 +71,7 @@ module Udiff
 
             v[idx] = x
 
-            if x >= n && y >= m
-              throw :done
-            end
+            throw :done if x >= n && y >= m
           end
         end
       end
@@ -90,11 +88,11 @@ module Udiff
         v = trace[d]
         k = x - y
 
-        if k == -d || (k != d && v[k - 1 + offset] < v[k + 1 + offset])
-          prev_k = k + 1
-        else
-          prev_k = k - 1
-        end
+        prev_k = if k == -d || (k != d && v[k - 1 + offset] < v[k + 1 + offset])
+                   k + 1
+                 else
+                   k - 1
+                 end
 
         prev_x = v[prev_k + offset]
         prev_y = prev_x - prev_k
@@ -106,7 +104,7 @@ module Udiff
           result.unshift([:equal, a[x]])
         end
 
-        if d > 0
+        if d.positive?
           if x == prev_x
             # Insert
             y -= 1
@@ -156,11 +154,9 @@ module Udiff
           if near_change
             current_hunk ||= new_hunk(old_pos, new_pos)
             current_hunk[:changes] << change
-          else
-            if current_hunk
-              hunks << current_hunk
-              current_hunk = nil
-            end
+          elsif current_hunk
+            hunks << current_hunk
+            current_hunk = nil
           end
 
           old_pos += 1

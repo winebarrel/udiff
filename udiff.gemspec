@@ -9,12 +9,14 @@ Gem::Specification.new do |spec|
   spec.email = ["sugawara@winebarrel.jp"]
 
   spec.summary = "Pure Ruby unified diff library"
-  spec.description = "Generate unified diffs between two strings in pure Ruby, compatible with Diffy::Diff.new(a, b, diff: '-u').to_s"
+  spec.description = "Generate unified diffs between two strings in pure Ruby, " \
+                     "compatible with Diffy::Diff.new(a, b, diff: '-u').to_s"
   spec.homepage = "https://github.com/winebarrel/udiff"
   spec.required_ruby_version = ">= 2.7.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
+  spec.metadata["rubygems_mfa_required"] = "true"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
