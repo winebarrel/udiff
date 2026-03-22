@@ -19,7 +19,7 @@ gem "udiff"
 
 ## Usage
 
-### Basic (unified diff text)
+### Basic
 
 ```ruby
 require "udiff"
@@ -28,6 +28,21 @@ a = "foo\nbar\nbaz\n"
 b = "foo\nqux\nbaz\n"
 
 puts Udiff::Diff.new(a, b).to_s
+```
+
+```
+ foo
+-bar
++qux
+ baz
+```
+
+### With diff info headers
+
+By default, file headers (`--- a` / `+++ b`) and hunk headers (`@@ ... @@`) are not included. To include them:
+
+```ruby
+puts Udiff::Diff.new(a, b, include_diff_info: true).to_s
 ```
 
 ```diff
@@ -58,12 +73,4 @@ Produces ANSI-colored output:
 ```ruby
 # Show 1 line of context instead of the default 3
 puts Udiff::Diff.new(a, b, context: 1).to_s
-```
-
-### With diff info headers
-
-By default, file headers (`--- a` / `+++ b`) and hunk headers (`@@ ... @@`) are not included. To include them:
-
-```ruby
-puts Udiff::Diff.new(a, b, include_diff_info: true).to_s
 ```
