@@ -1,5 +1,7 @@
 # udiff
 
+[![CI](https://github.com/winebarrel/udiff/actions/workflows/ci.yml/badge.svg)](https://github.com/winebarrel/udiff/actions/workflows/ci.yml)
+
 Pure Ruby unified diff library. No external dependencies, no shelling out to `diff`.
 
 Compatible with `Diffy::Diff.new(a, b, diff: '-u').to_s`.
