@@ -1,6 +1,7 @@
 # udiff
 
 [![CI](https://github.com/winebarrel/udiff/actions/workflows/ci.yml/badge.svg)](https://github.com/winebarrel/udiff/actions/workflows/ci.yml)
+[![Gem Version](https://badge.fury.io/rb/udiff.svg)](https://badge.fury.io/rb/udiff)
 
 Pure Ruby unified diff library. No external dependencies, no shelling out to `diff`.
 
