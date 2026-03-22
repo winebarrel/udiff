@@ -145,6 +145,180 @@ RSpec.describe Udiff::Diff do
     expect(diff.to_s).to eq(expected)
   end
 
+  describe "multiple changes" do
+    it "produces two separate hunks for far apart changes" do
+      a = (1..20).map { |i| "line#{i}\n" }.join
+      b_lines = (1..20).map { |i| "line#{i}\n" }
+      b_lines[2] = "changed3\n"
+      b_lines[17] = "changed18\n"
+      b = b_lines.join
+      diff = Udiff::Diff.new(a, b, include_diff_info: true)
+      result = diff.to_s
+      expected = <<~DIFF
+        --- a
+        +++ b
+        @@ -1,6 +1,6 @@
+         line1
+         line2
+        -line3
+        +changed3
+         line4
+         line5
+         line6
+        @@ -15,6 +15,6 @@
+         line15
+         line16
+         line17
+        -line18
+        +changed18
+         line19
+         line20
+      DIFF
+      expect(result).to eq(expected)
+    end
+
+    it "merges adjacent changes into one hunk" do
+      a = (1..20).map { |i| "line#{i}\n" }.join
+      b_lines = (1..20).map { |i| "line#{i}\n" }
+      b_lines[3] = "changed4\n"
+      b_lines[9] = "changed10\n"
+      b = b_lines.join
+      diff = Udiff::Diff.new(a, b, include_diff_info: true)
+      result = diff.to_s
+      expected = <<~DIFF
+        --- a
+        +++ b
+        @@ -1,13 +1,13 @@
+         line1
+         line2
+         line3
+        -line4
+        +changed4
+         line5
+         line6
+         line7
+         line8
+         line9
+        -line10
+        +changed10
+         line11
+         line12
+         line13
+      DIFF
+      expect(result).to eq(expected)
+    end
+
+    it "produces three separate hunks" do
+      a = (1..30).map { |i| "line#{i}\n" }.join
+      b_lines = (1..30).map { |i| "line#{i}\n" }
+      b_lines[1] = "changed2\n"
+      b_lines[14] = "changed15\n"
+      b_lines[27] = "changed28\n"
+      b = b_lines.join
+      diff = Udiff::Diff.new(a, b, include_diff_info: true)
+      result = diff.to_s
+      expect(result.scan(/@@ /).size).to eq(3)
+      expect(result).to include("-line2\n+changed2")
+      expect(result).to include("-line15\n+changed15")
+      expect(result).to include("-line28\n+changed28")
+    end
+
+    it "handles consecutive changed lines" do
+      a = (1..10).map { |i| "line#{i}\n" }.join
+      b_lines = (1..10).map { |i| "line#{i}\n" }
+      b_lines[4] = "new5\n"
+      b_lines[5] = "new6\n"
+      b_lines[6] = "new7\n"
+      b = b_lines.join
+      diff = Udiff::Diff.new(a, b, include_diff_info: true)
+      result = diff.to_s
+      expected = <<~DIFF
+        --- a
+        +++ b
+        @@ -2,9 +2,9 @@
+         line2
+         line3
+         line4
+        -line5
+        -line6
+        -line7
+        +new5
+        +new6
+        +new7
+         line8
+         line9
+         line10
+      DIFF
+      expect(result).to eq(expected)
+    end
+
+    it "handles delete in one place and insert in another" do
+      a = (1..15).map { |i| "line#{i}\n" }.join
+      b_lines = (1..15).map { |i| "line#{i}\n" }
+      b_lines.delete_at(2) # remove line3
+      b_lines.insert(11, "inserted\n") # insert after line12
+      b = b_lines.join
+      diff = Udiff::Diff.new(a, b, include_diff_info: true)
+      result = diff.to_s
+      expect(result).to include("-line3\n")
+      expect(result).to include("+inserted\n")
+    end
+
+    it "handles changes at the very beginning and end" do
+      a = (1..15).map { |i| "line#{i}\n" }.join
+      b_lines = (1..15).map { |i| "line#{i}\n" }
+      b_lines[0] = "first\n"
+      b_lines[14] = "last\n"
+      b = b_lines.join
+      diff = Udiff::Diff.new(a, b, include_diff_info: true)
+      result = diff.to_s
+      expect(result.scan(/@@ /).size).to eq(2)
+      expected = <<~DIFF
+        --- a
+        +++ b
+        @@ -1,4 +1,4 @@
+        -line1
+        +first
+         line2
+         line3
+         line4
+        @@ -12,4 +12,4 @@
+         line12
+         line13
+         line14
+        -line15
+        +last
+      DIFF
+      expect(result).to eq(expected)
+    end
+
+    it "handles multiple inserts with no deletes" do
+      a = (1..10).map { |i| "line#{i}\n" }.join
+      b_lines = (1..10).map { |i| "line#{i}\n" }
+      b_lines.insert(2, "new_after2\n")
+      b_lines.insert(9, "new_after8\n")
+      b = b_lines.join
+      diff = Udiff::Diff.new(a, b)
+      result = diff.to_s
+      expect(result).to include("+new_after2\n")
+      expect(result).to include("+new_after8\n")
+      expect(result).not_to match(/^-/)
+    end
+
+    it "handles multiple deletes with no inserts" do
+      a = (1..15).map { |i| "line#{i}\n" }.join
+      b_lines = (1..15).map { |i| "line#{i}\n" }
+      b_lines.delete_at(3)
+      b_lines.delete_at(10) # originally line12
+      b = b_lines.join
+      diff = Udiff::Diff.new(a, b)
+      result = diff.to_s
+      expect(result).to include("-line4\n")
+      expect(result).to include("-line12\n")
+      expect(result).not_to match(/^\+/)
+    end
+  end
+
   describe "color format" do
     let(:reset) { "\033[0m" }
     let(:red) { "\033[31m" }
