@@ -12,10 +12,11 @@ module Udiff
       reset: "\033[0m"
     }.freeze
 
-    def initialize(string1, string2, context: DEFAULT_CONTEXT)
+    def initialize(string1, string2, context: DEFAULT_CONTEXT, include_diff_info: true)
       @lines1 = split_lines(string1)
       @lines2 = split_lines(string2)
       @context = context
+      @include_diff_info = include_diff_info
     end
 
     def to_s(format = :text)
@@ -24,10 +25,12 @@ module Udiff
       return "" if hunks.empty?
 
       out = +""
-      out << colorize("--- a", :header, format) << "\n"
-      out << colorize("+++ b", :header, format) << "\n"
+      if @include_diff_info
+        out << colorize("--- a", :header, format) << "\n"
+        out << colorize("+++ b", :header, format) << "\n"
+      end
       hunks.each do |hunk|
-        out << format_hunk(hunk, format)
+        out << format_hunk(hunk, format, @include_diff_info)
       end
       out
     end
@@ -199,7 +202,7 @@ module Udiff
       "#{code}#{text}#{ANSI_COLORS[:reset]}"
     end
 
-    def format_hunk(hunk, format)
+    def format_hunk(hunk, format, include_diff_info)
       old_start = hunk[:old_start] + 1
       new_start = hunk[:new_start] + 1
       old_count = 0
@@ -222,8 +225,12 @@ module Udiff
         end
       end
 
-      header = colorize("@@ -#{old_start},#{old_count} +#{new_start},#{new_count} @@", :hunk_header, format)
-      "#{header}\n#{lines.join}"
+      if include_diff_info
+        header = colorize("@@ -#{old_start},#{old_count} +#{new_start},#{new_count} @@", :hunk_header, format)
+        "#{header}\n#{lines.join}"
+      else
+        lines.join
+      end
     end
 
     def ensure_newline(line)

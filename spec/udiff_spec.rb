@@ -178,4 +178,31 @@ RSpec.describe Udiff::Diff do
       expect(result).not_to include("\033[")
     end
   end
+
+  describe "include_diff_info: false" do
+    it "excludes file headers and hunk headers" do
+      diff = Udiff::Diff.new("foo\n", "bar\n", include_diff_info: false)
+      result = diff.to_s
+      expect(result).not_to include("--- a")
+      expect(result).not_to include("+++ b")
+      expect(result).not_to include("@@")
+      expect(result).to eq("-foo\n+bar\n")
+    end
+
+    it "works with color format" do
+      diff = Udiff::Diff.new("foo\n", "bar\n", include_diff_info: false)
+      result = diff.to_s(:color)
+      expect(result).not_to include("--- a")
+      expect(result).not_to include("+++ b")
+      expect(result).not_to include("@@")
+      expect(result).to include("\033[31m-foo\033[0m")
+      expect(result).to include("\033[32m+bar\033[0m")
+    end
+
+    it "includes context lines" do
+      diff = Udiff::Diff.new("a\nb\nc\n", "a\nX\nc\n", include_diff_info: false)
+      result = diff.to_s
+      expect(result).to eq(" a\n-b\n+X\n c\n")
+    end
+  end
 end

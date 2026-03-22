@@ -59,3 +59,10 @@ Produces ANSI-colored output:
 # Show 1 line of context instead of the default 3
 puts Udiff::Diff.new(a, b, context: 1).to_s
 ```
+
+### Without diff info headers
+
+```ruby
+# Suppress --- a / +++ b and @@ ... @@ lines
+puts Udiff::Diff.new(a, b, include_diff_info: false).to_s
+```
