@@ -144,4 +144,38 @@ RSpec.describe Udiff::Diff do
     DIFF
     expect(diff.to_s).to eq(expected)
   end
+
+  describe "color format" do
+    let(:reset) { "\033[0m" }
+    let(:red) { "\033[31m" }
+    let(:green) { "\033[32m" }
+    let(:cyan) { "\033[36m" }
+    let(:gray) { "\033[90m" }
+
+    it "colorizes diff output" do
+      diff = Udiff::Diff.new("foo\n", "bar\n")
+      result = diff.to_s(:color)
+
+      expect(result).to include("#{gray}--- a#{reset}")
+      expect(result).to include("#{gray}+++ b#{reset}")
+      expect(result).to include("#{cyan}@@ -1,1 +1,1 @@#{reset}")
+      expect(result).to include("#{red}-foo#{reset}")
+      expect(result).to include("#{green}+bar#{reset}")
+    end
+
+    it "does not colorize context lines" do
+      diff = Udiff::Diff.new("a\nb\nc\n", "a\nX\nc\n")
+      result = diff.to_s(:color)
+
+      expect(result).to include(" a\n")
+      expect(result).to include(" c\n")
+      expect(result).not_to match(/\033\[\d+m a/)
+    end
+
+    it "returns plain text with default format" do
+      diff = Udiff::Diff.new("foo\n", "bar\n")
+      result = diff.to_s
+      expect(result).not_to include("\033[")
+    end
+  end
 end
