@@ -12,6 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = "Generate unified diffs between two strings in pure Ruby, " \
                      "compatible with Diffy::Diff.new(a, b, diff: '-u').to_s"
   spec.homepage = "https://github.com/winebarrel/udiff"
+  spec.license = "CC0-1.0"
   spec.required_ruby_version = ">= 2.7.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
